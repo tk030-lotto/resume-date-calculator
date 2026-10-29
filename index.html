@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+  <meta name="description" content="生年月日から満年齢・日齢・和暦・干支・厄年・年祝い、および履歴書用学歴年月を法令に基づき自動計算するWebツール。早生まれ・うるう年対応。">
+  <title>ResumeDateCalc - 履歴書・学歴・年次自動計算機</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+
+  <!-- Open Graph Protocol (OGP) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ResumeDateCalc - 履歴書・学歴・年次自動計算機">
+  <meta property="og:description" content="生年月日から満年齢・和暦・日齢・干支・厄年・年祝い、および履歴書用学歴年月を法令に基づき自動計算するWebツール。早生まれ・うるう年対応。">
+  <meta property="og:image" content="./assets/demo.gif">
+  <meta property="og:site_name" content="ResumeDateCalc">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ResumeDateCalc - 履歴書・学歴・年次自動計算機">
+  <meta name="twitter:description" content="生年月日から満年齢・和暦・日齢・干支・厄年・年祝い、および履歴書用学歴年月を法令に基づき自動計算。早生まれ・うるう年対応。">
+  <meta name="twitter:image" content="./assets/demo.gif">
+
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="title-group">
+          <h1 class="app-title">ResumeDateCalc</h1>
+          <span class="badge-privacy">
+            <span class="badge-dot"></span>
+            オフライン動作・通信なし
+          </span>
+        </div>
+      </div>
+      <p class="app-subtitle">履歴書・学歴・年次自動計算機（早生まれ・うるう年・改元日境界 法令準拠）</p>
+    </header>
+
+    <main>
+      <!-- 1. 生年月日 & 属性入力 -->
+      <section class="card" aria-labelledby="heading-birth">
+        <h2 id="heading-birth" class="card-title">
+          <span class="card-title-icon">●</span> 生年月日・属性の設定
+        </h2>
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label" for="select-year">生年月日</label>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px;">
+              <select id="select-year" class="select-input" aria-label="生年"></select>
+              <select id="select-month" class="select-input" aria-label="誕生月"></select>
+              <select id="select-date" class="select-input" aria-label="誕生日"></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">性別（厄年計算用）</label>
+            <div class="segmented-control" role="radiogroup" aria-label="性別選択">
+              <input type="radio" id="gender-none" name="gender" value="none" checked>
+              <label for="gender-none">指定なし</label>
+
+              <input type="radio" id="gender-male" name="gender" value="male">
+              <label for="gender-male">男性</label>
+
+              <input type="radio" id="gender-female" name="gender" value="female">
+              <label for="gender-female">女性</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. サマリーメトリクス (MetricCards) -->
+      <section class="metrics-grid" aria-label="基本情報サマリー">
+        <div class="metric-card">
+          <span class="metric-label">満年齢</span>
+          <span id="metric-age" class="metric-value">- 歳</span>
+          <span id="metric-early-badge" class="metric-sub">早生まれ判定: -</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">今日の和暦</span>
+          <span id="metric-wareki-today" class="metric-value">-</span>
+          <span id="metric-today-date" class="metric-sub">-</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">日齢（生後日数）</span>
+          <span id="metric-days" class="metric-value">- 日</span>
+          <span class="metric-sub">誕生当日を1日目として算出</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">干支（十二支）</span>
+          <span id="metric-zodiac" class="metric-value">-</span>
+          <span id="metric-birth-wareki" class="metric-sub">生年和暦: -</span>
+        </div>
+      </section>
+
+      <!-- 厄年・年祝いバナー通知 -->
+      <div id="banner-container" class="banner-container"></div>
+
+      <!-- 3. 学歴カスタマイズ設定 -->
+      <section class="card" aria-labelledby="heading-custom">
+        <h2 id="heading-custom" class="card-title">
+          <span class="card-title-icon">●</span> 履歴書・学歴カスタマイズ
+        </h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="select-course">進路区分</label>
+            <select id="select-course" class="select-input">
+              <option value="university_4" selected>4年制大学（標準）</option>
+              <option value="university_6">6年制大学（医・歯・薬・獣医等）</option>
+              <option value="junior_college_2">短期大学（2年制）</option>
+              <option value="junior_college_3">短期大学（3年制）</option>
+              <option value="vocational_2">専門学校（2年制）</option>
+              <option value="vocational_3">専門学校（3年制）</option>
+              <option value="vocational_4">専門学校（4年制・高度専門士）</option>
+              <option value="kosen_5">高等専門学校（高専・5年制）</option>
+              <option value="graduate_2">大学院修士課程（4年制大卒後・2年制）</option>
+              <option value="highschool_only">高等学校卒業まで</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="select-ronin">浪人年数（進学遅延）</label>
+            <select id="select-ronin" class="select-input">
+              <option value="0" selected>現役合格 (0年)</option>
+              <option value="1">1年浪人</option>
+              <option value="2">2年浪人</option>
+              <option value="3">3年浪人</option>
+              <option value="4">4年浪人</option>
+              <option value="5">5年浪人</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="select-ryunen">留年・休学年数（在籍延長）</label>
+            <select id="select-ryunen" class="select-input">
+              <option value="0" selected>ストレート卒業 (0年)</option>
+              <option value="1">1年延長</option>
+              <option value="2">2年延長</option>
+              <option value="3">3年延長</option>
+              <option value="4">4年延長</option>
+              <option value="5">5年延長</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">表示範囲</label>
+            <div class="segmented-control" role="radiogroup" aria-label="表示範囲">
+              <input type="radio" id="scope-highschool" name="scope" value="highschool">
+              <label for="scope-highschool">高校以降</label>
+
+              <input type="radio" id="scope-junior" name="scope" value="junior_high" checked>
+              <label for="scope-junior">中学卒業〜</label>
+
+              <input type="radio" id="scope-all" name="scope" value="all">
+              <label for="scope-all">全学歴</label>
+            </div>
+          </div>
+
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">年号表記形式</label>
+            <div class="segmented-control" role="radiogroup" aria-label="年号表記形式">
+              <input type="radio" id="format-both" name="format" value="both" checked>
+              <label for="format-both">西暦（和暦）併記</label>
+
+              <input type="radio" id="format-seireki" name="format" value="seireki">
+              <label for="format-seireki">西暦のみ</label>
+
+              <input type="radio" id="format-wareki" name="format" value="wareki">
+              <label for="format-wareki">和暦のみ</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 学歴タイムラインテーブル -->
+      <section class="card" aria-labelledby="heading-timeline">
+        <h2 id="heading-timeline" class="card-title">
+          <span class="card-title-icon">●</span> 履歴書用学歴タイムライン
+        </h2>
+        <p class="action-tip">学校名を入力すると、一括コピー時のテキストに即時反映されます。</p>
+
+        <div class="table-container">
+          <table class="resume-table" aria-label="学歴一覧表">
+            <thead>
+              <tr>
+                <th scope="col" class="col-date">年月</th>
+                <th scope="col" class="col-status">区分</th>
+                <th scope="col" class="col-school">学校名・学部学科名（任意入力）</th>
+              </tr>
+            </thead>
+            <tbody id="resume-tbody">
+              <!-- JSによって動的レンダリング -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="action-area">
+          <button id="btn-copy" class="btn btn-primary" type="button">
+            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            履歴書用テキストを一括コピー
+          </button>
+          <span class="action-tip">※ タブ区切り整形済み。Word、Excel、Web履歴書フォームへ直接貼り付け可能です。</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>ResumeDateCalc &copy; 2026 Zero Dev (tk030). Released under the MIT License.</p>
+      <div class="footer-links">
+        <a class="footer-link" href="https://zero-dev.jp" target="_blank" rel="noopener">Zero Dev</a>
+        <a class="footer-link" href="./README.md" target="_blank" rel="noopener">README</a>
+        <a class="footer-link" href="./LICENSE" target="_blank" rel="noopener">License</a>
+      </div>
+      <p class="footer-disclaimer" style="margin-top: 8px; font-size: 0.75rem; color: #71717a;">
+        免責事項: 本ツールの計算結果は一般的な法令・慣例に基づく目安です。公的な履歴書提出時はご自身で最終確認を行ってください。
+      </p>
+    </footer>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" aria-live="polite">
+    <div id="toast" class="toast">
+      <svg class="btn-icon toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span id="toast-message">クリップボードにコピーしました！</span>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="./js/engine.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# 許可リスト方式: すべて除外して、公開するものだけを許可
+/*
+!/.gitignore
+!/index.html
+!/css/
+!/css/**
+!/js/
+!/js/**
+!/assets/
+!/assets/**
+!/favicon.svg
+!/.nojekyll
+!/ツール起動.bat
+!/README.md
+!/LICENSE
