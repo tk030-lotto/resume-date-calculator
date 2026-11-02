@@ -12,7 +12,7 @@
   --border-focus: #3b82f6;
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
+  --text-muted: #8b8b95;
   --accent-blue: #3b82f6;
   --accent-blue-hover: #2563eb;
   --accent-emerald: #10b981;
@@ -210,7 +210,18 @@ body {
 }
 
 .segmented-control input[type="radio"] {
-  display: none;
+  /* display:none だと Tab で到達できず、キーボードで選択できない (I-01)。
+     見た目は label 側で描くため、要素自体は 1px の透明な状態で残す。 */
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+
+.segmented-control input[type="radio"]:focus-visible + label {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 .segmented-control input[type="radio"]:checked + label {
