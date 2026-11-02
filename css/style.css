@@ -156,6 +156,11 @@ body {
   gap: 6px;
 }
 
+/* 3択のセグメントは狭い列に入れるとラベルが縦積みになるため、行いっぱいに広げる (I-01 の見た目) */
+.form-group:has(.segmented-control) {
+  grid-column: 1 / -1;
+}
+
 .form-label {
   font-size: 0.8125rem;
   font-weight: 500;
@@ -196,8 +201,19 @@ body {
   gap: 4px;
 }
 
+@media (max-width: 520px) {
+  /* 画面が狭いときは3択を縦に並べる（1列に3つ並べるとラベルが縦積みになるため） */
+  .segmented-control {
+    flex-direction: column;
+  }
+  .segmented-control label {
+    text-align: left;
+  }
+}
+
 .segmented-control label {
   flex: 1;
+  min-width: 0;
   text-align: center;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -325,7 +341,9 @@ body {
 .table-container {
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  overflow: hidden;
+  /* スマホ幅では表がはみ出すため、切り取らず横スクロールさせる */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-top: 12px;
 }
 
